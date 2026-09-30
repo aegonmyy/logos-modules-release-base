@@ -1,0 +1,34 @@
+name: Release logos-osm-app
+
+# Manually-triggered release for the OSM distribution Basecamp app.
+#
+# The app lives inside the same repository as the SDK module
+# (submodules/logos-osm/app), so its module_path points *inside* the
+# submodule. The release action inits the containing submodule and then cds
+# into `app/`, which is why `app/flake.nix` exists: the action builds
+# `.#lgx-portable` from the flake at module_path, and the repository-root
+# flake can only expose one bare `lgx-portable` (the SDK module's).
+#
+# Source of truth for module name + version is
+# submodules/logos-osm/app/metadata.json — read by the upstream
+# logos-modules-release-action.
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_build:
+        description: "Force build — replace the current published release if it has the same version."
+        type: boolean
+        default: false
+
+# Forked repos default to a read-only GITHUB_TOKEN.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    uses: ./.github/workflows/_release-module.yml
+    with:
+      module_path: submodules/logos-osm/app
+      force_build: ${{ inputs.force_build }}
+    secrets: inherit

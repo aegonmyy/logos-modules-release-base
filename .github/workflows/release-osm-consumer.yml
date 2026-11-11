@@ -1,0 +1,36 @@
+name: Release osm-consumer
+
+# Manually-triggered release for the OSM consumer example module.
+#
+# The consumer app lives inside the same repository as the SDK module
+# (submodules/logos-osm/examples/consumer-app), so its module_path points
+# *inside* the submodule. The release action inits the containing submodule
+# and then cds into examples/consumer-app/, which has its own flake.nix
+# exposing lgx-portable (see app/flake.nix for the same pattern).
+#
+# This is the minimal embedding example required by LP-0018: it depends only
+# on the `osm` SDK module, resolves a region to its on-chain CID, and hosts
+# nothing.
+#
+# Source of truth for module name + version is
+# submodules/logos-osm/examples/consumer-app/metadata.json.
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_build:
+        description: "Force build — replace the current published release if it has the same version."
+        type: boolean
+        default: false
+
+# Forked repos default to a read-only GITHUB_TOKEN.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    uses: ./.github/workflows/_release-module.yml
+    with:
+      module_path: submodules/logos-osm/examples/consumer-app
+      force_build: ${{ inputs.force_build }}
+    secrets: inherit
